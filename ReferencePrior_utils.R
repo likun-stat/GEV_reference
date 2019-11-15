@@ -37,7 +37,9 @@ H11<- function(xi){
 x <- c(seq(-0.4999,-0.03,by=0.001),0,seq(0.025,10,by=0.001))
 H11 <- Vectorize(H11)
 h_approx<-approxfun(x=c(-0.5,x),y=c(H11(-0.5),H11(x)))
-h11<-h_approx
+h11<-function(xi) {
+  if(xi<=-0.5) return(-Inf)
+  h_approx(xi)}
 
 # curve(h11, from=-0.3, to=0.3)
 # curve(h11, from=-0.5, to=10)
@@ -61,7 +63,9 @@ H22_1 <- function(xi){
 x <- c(seq(-0.4999,-0.03,by=0.001),0,seq(0.025,10,by=0.001))
 H22_1 <- Vectorize(H22_1)
 h_approx<-approxfun(x=c(-0.5,x),y=c(H22_1(-0.5),H22_1(x)))
-h22_1<-h_approx
+h22_1<-function(xi){
+  if(xi<=-0.5) return(-Inf)
+  h_approx}
 
 # curve(h22_1, from=-0.3, to=0.3)
 # curve(h22_1, from=-0.5, to=10,ylim=c(-2,2))
@@ -85,7 +89,9 @@ H22_2<- function(xi){
 x <- c(seq(-0.4999,-0.03,by=0.001),0,seq(0.025,10,by=0.001))
 H22_2 <- Vectorize(H22_2)
 h_approx<-approxfun(x=c(-0.5,x),y=c(H22_2(-0.5),H22_2(x)))
-h22_2<-h_approx
+h22_2<-function(xi){
+  if(xi<=-0.5) return(-Inf)
+  h_approx}
 
 # curve(h22_2, from=-0.3, to=0.3)
 # curve(h22_2, from=-0.5, to=10, col='red', add=TRUE)
@@ -97,6 +103,7 @@ h22_2<-h_approx
 ##----------------------- MDI ---------------------------
 ##-------------------------------------------------------
 MDI<-function(xi){
+  if(xi<=-0.5) return(-Inf)
   -gam*(1+xi)
 }
 
