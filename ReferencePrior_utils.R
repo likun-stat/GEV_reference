@@ -39,7 +39,8 @@ H11 <- Vectorize(H11)
 h_approx<-approxfun(x=c(-0.5,x),y=c(H11(-0.5),H11(x)))
 h11<-function(xi) {
   if(xi<=-0.5) return(-Inf)
-  h_approx(xi)}
+  else if(xi <10) return(h_approx(xi))
+  else return(H11(xi))}
 
 # curve(h11, from=-0.3, to=0.3)
 # curve(h11, from=-0.5, to=10)
@@ -65,7 +66,8 @@ H22_1 <- Vectorize(H22_1)
 h_approx<-approxfun(x=c(-0.5,x),y=c(H22_1(-0.5),H22_1(x)))
 h22_1<-function(xi){
   if(xi<=-0.5) return(-Inf)
-  h_approx}
+  else if(xi <10) return(h_approx(xi))
+  else return(H22_1(xi))}
 
 # curve(h22_1, from=-0.3, to=0.3)
 # curve(h22_1, from=-0.5, to=10,ylim=c(-2,2))
@@ -91,7 +93,8 @@ H22_2 <- Vectorize(H22_2)
 h_approx<-approxfun(x=c(-0.5,x),y=c(H22_2(-0.5),H22_2(x)))
 h22_2<-function(xi){
   if(xi<=-0.5) return(-Inf)
-  h_approx}
+  else if(xi <10) return(h_approx(xi))
+  else return(H22_1(xi))}
 
 # curve(h22_2, from=-0.3, to=0.3)
 # curve(h22_2, from=-0.5, to=10, col='red', add=TRUE)
