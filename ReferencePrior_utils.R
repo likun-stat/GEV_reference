@@ -184,6 +184,46 @@ Lik2<-function(Y,mu,xi,tau){
 }
 
 
+##---------------------------------------------------------------------
+##------------------- Generate GEV random samples ---------------------
+##---------------------------------------------------------------------
+revd <- function (n, loc = 0, scale = 1, shape = 0, threshold = 0, type = c("GEV", "GP")) 
+{
+  type <- match.arg(type)
+  type <- tolower(type)
+  if (type == "gev") 
+    z <- rexp(n)
+  else if (type == "gp") {
+    z <- runif(n)
+    loc <- threshold
+  }
+  else stop("revd: invalid type argument.")
+  out <- numeric(n) + NA
+  if (min(scale) < 0) 
+    stop("revd: scale parameter(s) must be positively valued.")
+  if (length(loc) == 1) 
+    loc <- rep(loc, n)
+  if (length(scale) == 1) 
+    sc <- rep(scale, n)
+  else sc <- scale
+  if (length(shape) == 1) 
+    sh <- rep(shape, n)
+  else sh <- shape
+  if (length(loc) != n || length(sc) != n || length(sh) != 
+      n) 
+    stop("revd: parameters must have length equal to 1 or n.")
+  id <- sh == 0
+  if (any(id)) {
+    if (type == "gev") 
+      out[id] <- loc[id] - sc[id] * log(z[id])
+    else if (type == "gp") 
+      out[id] <- loc[id] + rexp(n, rate = 1/sc[id])
+  }
+  if (any(!id)) 
+    out[!id] <- loc[!id] + sc[!id] * (z[!id]^(-sh[!id]) - 
+                                        1)/sh[!id]
+  return(out)
+}
 
 
 
@@ -193,18 +233,23 @@ Lik2<-function(Y,mu,xi,tau){
 ##-----------------------------------------------------------------
 library(ggplot2)
 prior_plot<-ggplot(data.frame(xi=c(-0.5, 0.5)), aes(xi)) + 
-  stat_function(fun=h11, col='#036180',alpha=0.7, size=1.1) +
-  stat_function(fun=h22_1, col='#deaf04',alpha=0.7, size=1.1)+
-  stat_function(fun=h22_2, col='#2c20b0',alpha=0.7, size=1.1)+
-  stat_function(fun=MDI, linetype="dashed", col='#0a0001',alpha=0.9) +
+  stat_function(fun=h11, aes(color ='line1'),alpha=0.7, size=1.1) +
+  stat_function(fun=h22_1, aes(color ='line2'),alpha=0.7, size=1.1)+
+  stat_function(fun=h22_2, aes(color ='line3'),alpha=0.7, size=1.1)+
+  stat_function(fun=MDI,  aes(color ='line4'),alpha=0.9) +
   xlab(expression(xi))+ylab(expression(pi(xi)))+
   coord_cartesian(xlim=c(-0.5, 0.5)) +
   # scale_y_continuous(breaks=c(0,1,sqrt(h22),2,sqrt(h22_1),3,4),labels = c(0,1,'',2,'',3,4)) +
   # scale_x_continuous(breaks =c(-0.5,0,2.5,5,7.5,10),labels = c(-0.5,'  0',2.5,5,7.5,10)) +
+  scale_colour_manual("Lgend title", values = c("line1"='#036180', 'line2'='#deaf04','line3'='#2c20b0','line4'='red'),
+                      labels=c(expression(paste("(",xi,', ',tau,', ', mu,')')),
+                               expression(paste("(",mu,', ',xi,', ', tau,')')),
+                               expression(paste("(",tau,', ',xi,', ', mu,')')),
+                               'MDI')) +
   theme(panel.background = element_rect(fill = NA), panel.border = element_rect(colour = "black", fill=NA),
         panel.grid.major.x = element_line(colour = "grey95"),
         panel.grid.major.y = element_line(colour = "grey95"),
-        legend.position = 'none', legend.justification = c("right","top"), legend.title=element_blank(), 
+        legend.position = c(0.95,0.95), legend.justification = c("right","top"), legend.title=element_blank(), 
         legend.text=element_text(size=10), legend.spacing.x = unit(0.2,'cm'),
         legend.box.background = element_rect(colour = "black",size=0.7),
         legend.text.align=0.5,

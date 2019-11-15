@@ -8,7 +8,7 @@ source("~/Desktop/Research/GEV_reference/ReferencePrior_sampler.R")
 ### -------------------------- Precipitation (xi=0.15) --------------------------------
 ######################################################################################
 
-library(extRemes)
+# library(extRemes)
 xi_prior_type <- 'Beta'
 mu <- 0
 xi <- 0.15
