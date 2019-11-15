@@ -1,6 +1,6 @@
 source("~/Desktop/Research/GEV_reference/generic_samplers.R")
-source("~/Desktop/Research/GEV_reference/Illustration/ReferencePrior_utils.R")
-source("~/Desktop/Research/GEV_reference/Illustration/ReferencePrior_sampler.R")
+source("~/Desktop/Research/GEV_reference/ReferencePrior_utils.R")
+source("~/Desktop/Research/GEV_reference/ReferencePrior_sampler.R")
 
 
 
