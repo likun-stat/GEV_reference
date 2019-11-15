@@ -94,7 +94,7 @@ h_approx<-approxfun(x=c(-0.5,x),y=c(H22_2(-0.5),H22_2(x)))
 h22_2<-function(xi){
   if(xi<=-0.5) return(-Inf)
   else if(xi <10) return(h_approx(xi))
-  else return(H22_1(xi))}
+  else return(H22_2(xi))}
 
 # curve(h22_2, from=-0.3, to=0.3)
 # curve(h22_2, from=-0.5, to=10, col='red', add=TRUE)
