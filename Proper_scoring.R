@@ -1,3 +1,5 @@
+source("~/Desktop/Research/GEV_reference/ReferencePrior_utils.R")
+
 experiment.name <- "Beta-prior"
 n.experiments <- 100
 xi <- 0.15
