@@ -38,10 +38,10 @@ x <- c(seq(-0.4999,-0.03,by=0.001),0,seq(0.025,10,by=0.001))
 H11 <- Vectorize(H11)
 h_approx<-approxfun(x=c(-0.5,x),y=c(H11(-0.5),H11(x)))
 h11<-function(xi) {
-  if(xi<=-0.5) return(-Inf)
+  if(xi< -0.5) return(-Inf)
   else if(xi <10) return(h_approx(xi))
   else return(H11(xi))}
-
+h11 <- Vectorize(h11)
 # curve(h11, from=-0.3, to=0.3)
 # curve(h11, from=-0.5, to=10)
 
@@ -63,12 +63,12 @@ H22_1 <- function(xi){
 }
 x <- c(seq(-0.4999,-0.03,by=0.001),0,seq(0.025,10,by=0.001))
 H22_1 <- Vectorize(H22_1)
-h_approx<-approxfun(x=c(-0.5,x),y=c(H22_1(-0.5),H22_1(x)))
+h_approx1<-approxfun(x=c(-0.5,x),y=c(H22_1(-0.5),H22_1(x)))
 h22_1<-function(xi){
-  if(xi<=-0.5) return(-Inf)
-  else if(xi <10) return(h_approx(xi))
+  if(xi< -0.5) return(-Inf)
+  else if(xi <10) return(h_approx1(xi))
   else return(H22_1(xi))}
-
+h22_1 <- Vectorize(h22_1)
 # curve(h22_1, from=-0.3, to=0.3)
 # curve(h22_1, from=-0.5, to=10,ylim=c(-2,2))
 
@@ -90,12 +90,12 @@ H22_2<- function(xi){
 }
 x <- c(seq(-0.4999,-0.03,by=0.001),0,seq(0.025,10,by=0.001))
 H22_2 <- Vectorize(H22_2)
-h_approx<-approxfun(x=c(-0.5,x),y=c(H22_2(-0.5),H22_2(x)))
+h_approx2<-approxfun(x=c(-0.5,x),y=c(H22_2(-0.5),H22_2(x)))
 h22_2<-function(xi){
-  if(xi<=-0.5) return(-Inf)
-  else if(xi <10) return(h_approx(xi))
+  if(xi< -0.5) return(-Inf)
+  else if(xi <10) return(h_approx2(xi))
   else return(H22_2(xi))}
-
+h22_2 <- Vectorize(h22_2)
 # curve(h22_2, from=-0.3, to=0.3)
 # curve(h22_2, from=-0.5, to=10, col='red', add=TRUE)
 
@@ -106,10 +106,10 @@ h22_2<-function(xi){
 ##----------------------- MDI ---------------------------
 ##-------------------------------------------------------
 MDI<-function(xi){
-  if(xi<=-0.5) return(-Inf)
-  -gam*(1+xi)
+  if(xi< -0.5) return(-Inf)
+  return(-gam*(1+xi))
 }
-
+MDI <- Vectorize(MDI)
 
 
 ##-------------------------------------------------------
@@ -282,7 +282,7 @@ prior_plot<-ggplot(data.frame(xi=c(-0.5, 0.5)), aes(xi)) +
   stat_function(fun=h22_2, aes(color ='line3'),alpha=0.7, size=1.1)+
   stat_function(fun=MDI,  aes(color ='line4'),alpha=0.9) +
   xlab(expression(xi))+ylab(expression(pi(xi)))+
-  coord_cartesian(xlim=c(-0.5, 0.5)) +
+  coord_cartesian(xlim=c(-0.5, 0.5),ylim=c(-1,1.5)) +
   # scale_y_continuous(breaks=c(0,1,sqrt(h22),2,sqrt(h22_1),3,4),labels = c(0,1,'',2,'',3,4)) +
   # scale_x_continuous(breaks =c(-0.5,0,2.5,5,7.5,10),labels = c(-0.5,'  0',2.5,5,7.5,10)) +
   scale_colour_manual("Lgend title", values = c("line1"='#036180', 'line2'='#deaf04','line3'='#2c20b0','line4'='red'),
