@@ -5,6 +5,14 @@ n.experiments <- 100
 xi <- 0.15
 which <- 5001:10000
 
+n <- 50
+Y_all <- matrix(NA, nrow=n.experiments, ncol=n)
+set.seed(111)
+for (iter in 1:n.experiments){
+  Y_all[iter,] <- revd(n, loc=0, scale=1, shape=xi)
+}
+
+
 L50 <- qevd(0.98, loc=0, shape=xi, scale=1)
 L100 <- qevd(0.99, loc=0, shape=xi, scale=1)
 returnLevels_50 <- rep(NA, length(which))
@@ -60,8 +68,10 @@ for (iter in 1:n.experiments){
     tau_tmp <- out.obj$tau.trace[which[i]]
     returnLevels_50[i]  <- qevd(0.98, loc=mu_tmp, shape=xi_tmp, scale=tau_tmp)
     returnLevels_100[i] <- qevd(0.99, loc=mu_tmp, shape=xi_tmp, scale=tau_tmp)
-    QuantileScore50[i] <- (L50-returnLevels_50[i])*(as.numeric(L50<=returnLevels_50[i])-0.98)
-    QuantileScore100[i] <- (L100-returnLevels_100[i])*(as.numeric(L100<=returnLevels_100[i])-0.99)
+    QuantileScore50[i] <- mean((Y_all[iter,]-returnLevels_50[i])*(as.numeric(Y_all[iter,]<=returnLevels_50[i])-0.98))
+    QuantileScore100[i] <- mean((Y_all[iter,]-returnLevels_100[i])*(as.numeric(Y_all[iter,]<=returnLevels_100[i])-0.99))
+    # QuantileScore50[i] <- (L50-returnLevels_50[i])*(as.numeric(L50<=returnLevels_50[i])-0.98)
+    # QuantileScore100[i] <- (L100-returnLevels_100[i])*(as.numeric(L100<=returnLevels_100[i])-0.99)
   }
   
   
