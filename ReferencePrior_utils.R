@@ -194,6 +194,19 @@ Lik2<-function(Y,mu,xi,tau){
 }
 
 
+# For Metropolis _ return level
+Lik3<-function(Y, mu_T, xi, tau, Time){
+  if(tau<=0) return(-Inf)
+  mu <- mu_T - tau*((log(Time/(Time-1)))^{-xi}-1)/xi
+  W <- 1+ (xi)*(Y-mu)/(tau)
+  if(xi==0) {
+    tmp <- (Y-mu)/tau
+    return(-length(Y)*log(tau)-sum(tmp)-sum(exp(-tmp)))}
+  if(any(W<0)) return(-Inf) else 
+    return(-length(Y)*log(tau)-(xi+1)*sum(log(W))/xi-sum(W^{-1/xi}))
+}
+
+
 ##---------------------------------------------------------------------
 ##------------------- Generate GEV random samples ---------------------
 ##---------------------------------------------------------------------

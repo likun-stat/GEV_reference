@@ -168,3 +168,182 @@ GEV.sampler.02 <- function(Y, iter.num = 1,
   return(out.obj)
   
 }
+
+
+
+
+
+
+
+###################################################################################
+## Main sampler
+
+## Y ...................................................  observations on GEV scale
+## mu_T ............................................................ T return level
+## xi ............................................................. shape parameter
+## tau ............................................................ scale parameter
+## xi_prior_type ................... One of: "Beta", "h11", "h22_1", "h22_2", "MDI"
+## initial.values .................. a list: mu, xi, tau
+## n.updates .................................................... number of updates
+## thin ............................................. number of runs in each update
+## experiment.name
+## echo.interval ......................... echo process every echo.interval updates
+## sigma.m
+## prop.Sigma
+## true.params ..................... a list:mu, xi, tau
+
+
+GEV.sampler.02_T <- function(Y, iter.num = 1,   
+                           xi_prior_type='Beta',
+                           initial.values,
+                           n.updates, thin=10,
+                           experiment.name="Huser-wadsworth",
+                           echo.interval=50,
+                           sigma.m=NULL, prop.Sigma=NULL, 
+                           true.params=NULL, sd.ratio=NULL, lower.prob.lim=0.5) {
+  
+  #library(doParallel)
+  #library(foreach)
+  # save.bit <- TRUE
+  
+  # Constants to control how many Metropolis steps get executed at each
+  # iteration of the main loop
+  n.metr.updates.mu_T <- 4
+  n.metr.updates.xi <- 4
+  n.metr.updates.tau <- 4
+  
+  
+  # Constants to control adaptation of the Metropolis sampler
+  c.0 <- 10
+  c.1 <- 0.8
+  k <- 3  # the iteration offset
+  metr.opt.1d <- 0.41
+  
+  
+  # A small number
+  eps <- 1e-06
+  
+  # Bookkeeping
+  n <- length(Y)
+  
+  # Load initial values
+  mu_T <- initial.values$mu_T
+  xi <- initial.values$xi
+  tau <- initial.values$tau
+  Time <- initial.values$Time
+  
+  
+  
+  # Initialize trace objects
+  
+  mu_T.trace <- rep(NA, n.updates)
+  xi.trace <- rep(NA, n.updates)
+  tau.trace <- rep(NA, n.updates)
+  mu_T.trace[1] <- mu_T
+  xi.trace[1] <- xi
+  tau.trace[1] <- tau
+  
+  
+  
+  # For tuning Metropolis updates of theta
+  if (is.null(sigma.m$mu_T)) sigma.m$mu_T <- 2.4^2
+  if (is.null(sigma.m$xi)) sigma.m$xi <- 2.4^2
+  if (is.null(sigma.m$tau)) sigma.m$tau <- 2.4^2
+  
+  
+  r.hat.mu_T <- NA
+  r.hat.xi <- NA
+  r.hat.tau <- NA
+  
+  # Choose prior type for xi
+  if(xi_prior_type=="Beta")  xi_prior <- beta_prior
+  if(xi_prior_type=="h11")  xi_prior <- h11
+  if(xi_prior_type=="h22_1")  xi_prior <- h22_1
+  if(xi_prior_type=="h22_2")  xi_prior <- h22_2
+  if(xi_prior_type=="MDI")  xi_prior <- MDI
+  
+  
+  
+  for (i in 2:n.updates) {
+    
+    ################################################################
+    ## Update Metropolis adaptation parameters
+    ################################################################
+    gamma1 <- c.0 / (i + k)^(c.1)
+    gamma2 <- 1 / (i + k)^(c.1)
+    
+    for (j in 1:thin) {
+      
+      
+      ################################################################
+      ## Update mu
+      ################################################################
+      metr.out.mu_T <- static.metr(starting.theta = mu_T,
+                                 likelihood.fn = Lik3, prior.fn = mu_prior,
+                                 n.updates = n.metr.updates.mu_T, prop.Sigma = 1, sigma.m=sigma.m$mu_T, verbose=FALSE,
+                                 Y=Y, xi=xi, tau=tau, Time=Time)
+      r.hat.mu_T <- metr.out.mu_T$acc.prob
+      mu_T <- metr.out.mu_T$trace[n.metr.updates.mu_T]
+      sigma.m$mu_T <- exp(log(sigma.m$mu_T) + gamma1*(r.hat.mu_T - metr.opt.1d))
+      
+      
+      ################################################################
+      ## Update xi
+      ################################################################
+      metr.out.xi <- static.metr(starting.theta = xi,
+                                 likelihood.fn = Lik3, prior.fn = xi_prior,
+                                 n.updates = n.metr.updates.xi, prop.Sigma = 1, sigma.m=sigma.m$xi, verbose=FALSE,
+                                 Y=Y, mu_T=mu_T, tau=tau, Time=Time)
+      r.hat.xi <- metr.out.xi$acc.prob
+      xi <- metr.out.xi$trace[n.metr.updates.xi]
+      sigma.m$xi<- exp(log(sigma.m$xi) + gamma1*(r.hat.xi - metr.opt.1d))
+      
+      
+      ################################################################
+      ## Update tau
+      ################################################################
+      metr.out.tau <- static.metr(starting.theta = tau,
+                                  likelihood.fn = Lik3, prior.fn = tau_prior,
+                                  n.updates = n.metr.updates.tau, prop.Sigma = 1, sigma.m=sigma.m$tau, verbose=FALSE,
+                                  Y=Y, mu_T=mu_T, xi=xi, Time=Time)
+      r.hat.tau <- metr.out.tau$acc.prob
+      tau <- metr.out.tau$trace[n.metr.updates.tau]
+      sigma.m$tau<- exp(log(sigma.m$tau) + gamma1*(r.hat.tau - metr.opt.1d))
+    }
+    
+    
+    # ------------------------- Fill in trace objects ---------------------------
+    mu_T.trace[i] <- mu_T
+    xi.trace[i] <- xi
+    tau.trace[i] <- tau
+    
+    
+    
+    # ----------------------------- Echo progress --------------------------------
+    if ((i %% echo.interval) == 0) {
+      cat("Done with", i, "updates,\n")
+      pdf(file=sprintf("%s_progress_%d.pdf", experiment.name, iter.num))
+      par(mfrow=c(3,2))
+      plot(mu_T.trace, type="l", ylab=expression(mu[T]))
+      if (!is.null(true.params)) abline(h=true.params$mu_T, lty=2, col=2, lwd=3)
+      plot(xi.trace, type="l", ylab=expression(xi))
+      if (!is.null(true.params)) abline(h=true.params$xi, lty=2, col=2, lwd=3)
+      plot(tau.trace, type="l", ylab=expression(tau))
+      if (!is.null(true.params)) abline(h=true.params$tau, lty=2, col=2, lwd=3)
+      dev.off()
+      
+      state <- list(Y=Y, mu_T=mu_T, xi=xi, tau=tau,
+                    i=i, sigma.m=sigma.m, prop.Sigma=prop.Sigma)
+      out.obj <- list(Y=Y, i=i,
+                      mu_T.trace=mu_T.trace,
+                      xi.trace=xi.trace,
+                      tau.trace=tau.trace)
+      save(state, out.obj, file=sprintf("%s_progress_%d.RData", experiment.name, iter.num))
+      # save.bit <- !save.bit
+    }
+  }
+  
+  return(out.obj)
+  
+}
+
