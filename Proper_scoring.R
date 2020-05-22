@@ -1,11 +1,16 @@
 source("~/Desktop/Research/GEV_reference/ReferencePrior_utils.R")
 
+args <- commandArgs(trailingOnly=TRUE)
+
+n <- as.numeric(args[1])
+n.experiments <- as.numeric(args[2])
+
 experiment.name <- "Beta-prior"
-n.experiments <- 100
+# n.experiments <- 100
 xi <- 0.15
 which <- 5001:10000
 
-n <- 50
+# n <- 50
 Y_all <- matrix(NA, nrow=n.experiments, ncol=n)
 set.seed(111)
 for (iter in 1:n.experiments){

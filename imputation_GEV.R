@@ -2,6 +2,10 @@ source("~/Desktop/Research/GEV_reference/generic_samplers.R")
 source("~/Desktop/Research/GEV_reference/ReferencePrior_utils.R")
 source("~/Desktop/Research/GEV_reference/ReferencePrior_sampler.R")
 
+args <- commandArgs(trailingOnly=TRUE)
+
+n <- as.numeric(args[1])
+n.experiments <- as.numeric(args[2])
 
 
 ######################################################################################
@@ -15,8 +19,8 @@ xi <- 0.15
 tau <- 1
 
 ## Generate fake data
-n <- 50
-n.experiments <- 100
+# n <- 50
+# n.experiments <- 100
 Y_all <- matrix(NA, nrow=n.experiments, ncol=n)
 set.seed(111)
 for (iter in 1:n.experiments){
